@@ -6,7 +6,7 @@
     <script src="../static/scripts/geom-utils.js"></script>
     <script src="../static/scripts/kanvas-utils.js"></script>
     <script src="../static/scripts/uplot.min.js"></script>
-    <link rel="stylesheet" href="../static/style.css" />
+    <link rel="stylesheet" href="../static/style.css?e=1" />
     <link rel="stylesheet" href="../static/scripts/uplot.min.css" />
 </head>
 
@@ -24,7 +24,7 @@
             </div>
             <div class="cam-feed-container card shadow">
                 <h3 style="border: none;">Camera Stream</h3>
-                <img class="cam-feed" src="../static/deipat.png">
+                <img class="cam-feed" id="cam-feed" src="../static/deipat.png">
             </div>
         </div>
         <div class="graphs-container">
@@ -44,13 +44,31 @@
     </div>
     <script>
         let socket = io();
+        let data = [[], [], []];
+
         socket.on('video_feed', function(msg) {
-            document.getElementById('cam-feed').src = "data:image/jpeg;base64," + msg;
+            // console.log(msg)
+            document.getElementById('cam-feed').src = "data:image/jpeg;base64," + msg.img;
+        });
+        
+        socket.on('pose', function(msg) {
+            console.log(msg)
+            data[0].push(Date.now());
+            data[1].push(msg.left_dist);
+            data[2].push(msg.right_dist);
+
+            let now = Date.now();
+            while (data[0][0] < now - 2000) {
+                data[0].shift();
+                data[1].shift();
+                data[2].shift();
+            }
         });
         
         setInterval(function() {
             if (socket.connected)
-                socket.emit('video_feed', {});
+                // socket.emit('video_feed', {});
+                socket.emit('update_pose', {});
         }, 50);
 
         let opts = {
@@ -60,7 +78,13 @@
                 {},
                 {
                     value: (self, rawValue) => "" + rawValue.toFixed(2),
-                    stroke: "black",
+                    stroke: "red",
+                    width: 2,
+                    label: "none"
+                },
+                {
+                    value: (self, rawValue) => "" + rawValue.toFixed(2),
+                    stroke: "blue",
                     width: 2,
                     label: "none"
                 }
@@ -79,17 +103,9 @@
             },
         };
 
-        let data = [[], []];
 
         function plotData(){
-            data[0].push(Date.now());
-            data[1].push(Math.sin(Date.now()/40) * 100);
-
-            let now = Date.now();
-            while (data[0][0] < now - 2000) {
-                data[0].shift();
-                data[1].shift();
-            }
+            
             plot1.setData(data);
             plot1.setScale("x", { min: Date.now() - 2000, max: Date.now()});
             plot2.setData(data);

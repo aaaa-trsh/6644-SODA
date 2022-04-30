@@ -37,9 +37,9 @@ class Encoder():
 
         self.__relative_angle = self.reader.duty_cycle() / 100
 
-        if self.__prev_relative_angle - self.__relative_angle > 0.9:
+        if self.__prev_relative_angle - self.__relative_angle > 0.6:
             self.__full_rotations += 1
-        elif self.__relative_angle - self.__prev_relative_angle > 0.9:
+        elif self.__relative_angle - self.__prev_relative_angle > 0.6:
             self.__full_rotations -= 1
 
         self.__angle = self.__relative_angle + self.__full_rotations

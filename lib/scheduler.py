@@ -12,6 +12,7 @@ class Command():
         print('schedule')
 
     def periodic(self):
+        # print("nothing to do")
         pass
 
     def is_finished(self):
