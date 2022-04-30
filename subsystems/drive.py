@@ -1,26 +1,35 @@
 from lib.spark import Spark
+from lib.encoder import Encoder
 from lib.pid import PID
+from constants import DrivetrainConstants
+import math
 
 class Drivetrain():
-    def __init__(self):
-        self.fl = Spark(1)
-        self.bl = Spark(2)
-        self.fr = Spark(3)
-        self.br = Spark(4)
+    def __init__(self, pi):
+        self.pi = pi
 
-        self.fr.set_inverted(True)
-        self.br.set_inverted(True)
+        self.left_encoder = Encoder(pi, DrivetrainConstants.LEFT_ENCODER_BCM)
+        self.left_spark = Spark(pi, DrivetrainConstants.LEFT_CONTROLLER_BCM)
 
+        self.right_encoder = Encoder(pi, DrivetrainConstants.RIGHT_ENCODER_BCM)
+        self.right_spark = Spark(pi, DrivetrainConstants.RIGHT_CONTROLLER_BCM)
+
+    def periodic(self):
+        self.left_encoder.update()
+        self.right_encoder.update()
+    
+    def get_left_distance(self):
+        return self.left_encoder.get_rotations() * DrivetrainConstants.WHEEL_DIAMETER * math.pi
+    
+    def get_right_distance(self):
+        return self.right_encoder.get_rotations() * DrivetrainConstants.WHEEL_DIAMETER * math.pi
+        
     def arcade_drive(self, throttle, turn):
-        self.fl.set_output(throttle - turn)
-        self.bl.set_output(throttle - turn)
-        self.fr.set_output(throttle + turn)
-        self.br.set_output(throttle + turn)
+        self.left_spark.set_output(throttle - turn)
+        self.right_spark.set_output(throttle + turn)
         print(throttle - turn, throttle + turn)
 
     def tank_drive(self, left, right):
-        self.fl.set_output(left)
-        self.bl.set_output(left)
-        self.fr.set_output(right)
-        self.br.set_output(right)
+        self.left_spark.set_output(left)
+        self.right_spark.set_output(right)
         print(left, right)

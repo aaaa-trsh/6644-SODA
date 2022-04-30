@@ -19,7 +19,7 @@ class Encoder():
         self.__last_update_ts = time.time()
         self.__cur_update_ts = time.time()
 
-    def get_angle(self):
+    def get_rotations(self):
         return self.__angle
     
     def get_rate(self):

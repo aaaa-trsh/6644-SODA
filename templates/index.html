@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="../static/scripts/socket.io.js"></script>
+    <script src="../static/scripts/geom-utils.js"></script>
+    <script src="../static/scripts/kanvas-utils.js"></script>
+    <script src="../static/scripts/uplot.min.js"></script>
+    <link rel="stylesheet" href="../static/style.css" />
+    <link rel="stylesheet" href="../static/scripts/uplot.min.css" />
+</head>
+
+<body>
+    <div class="row-container">
+
+        <div class="title-bar">
+            <h1><span style="color:#f7f73e;font-weight: 400;font-variation-settings: 'wght' 400; margin-right: 5px;">//</span>SODA
+            </h1>
+        </div>
+        <div class="column-container">
+            <div class="map-container card shadow">
+                <h3 style="border: none;">Occupancy Map</h3>
+                <canvas class="map-canvas" style=""></canvas>
+            </div>
+            <div class="cam-feed-container card shadow">
+                <h3 style="border: none;">Camera Stream</h3>
+                <img class="cam-feed" src="../static/deipat.png">
+            </div>
+        </div>
+        <div class="graphs-container">
+            <div class="card shadow">
+                <h3>is that jojivlogs???</h3>
+                <div class="graph-container" id="chart1-container">
+
+                </div>
+            </div>
+            <div class="card shadow">
+                <h3>woog</h3>
+                <div class="graph-container" id="chart2-container">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let socket = io();
+        socket.on('video_feed', function(msg) {
+            document.getElementById('cam-feed').src = "data:image/jpeg;base64," + msg;
+        });
+        
+        setInterval(function() {
+            if (socket.connected)
+                socket.emit('video_feed', {});
+        }, 50);
+
+        let opts = {
+            width: 400,
+            height: 300,
+            series: [
+                {},
+                {
+                    value: (self, rawValue) => "" + rawValue.toFixed(2),
+                    stroke: "black",
+                    width: 2,
+                    label: "none"
+                }
+            ],
+            select: {
+                show: false,
+            },
+            legend: {
+                show: false,
+            },
+            axes: [
+                { show: false, }
+            ],
+            scales: {
+                "x": { auto: false, }
+            },
+        };
+
+        let data = [[], []];
+
+        function plotData(){
+            data[0].push(Date.now());
+            data[1].push(Math.sin(Date.now()/40) * 100);
+
+            let now = Date.now();
+            while (data[0][0] < now - 2000) {
+                data[0].shift();
+                data[1].shift();
+            }
+            plot1.setData(data);
+            plot1.setScale("x", { min: Date.now() - 2000, max: Date.now()});
+            plot2.setData(data);
+            plot2.setScale("x", { min: Date.now() - 2000, max: Date.now()});
+            window.requestAnimationFrame(plotData);
+        }
+
+        function onResize() {
+            plot1.setSize({width: (window.innerWidth/2)-80, height:300});
+            plot2.setSize({width: (window.innerWidth/2)-80, height:300});
+        }
+        window.addEventListener('resize', onResize)
+
+        let plot1 = new uPlot(opts, data, document.getElementById("chart1-container"));
+        let plot2 = new uPlot(opts, data, document.getElementById("chart2-container"));
+        // let plot3 = new uPlot(opts, data, document.getElementById("chart3-container"));
+        // let plot4 = new uPlot(opts, data, document.getElementById("chart4-container"));
+        window.requestAnimationFrame(plotData);
+        onResize();
+
+    </script>
+</body>
+
+</html>

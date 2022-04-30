@@ -17,8 +17,7 @@ class Command():
     def is_finished(self):
         if self.timeout is None or self.timeout < 0:
             return False
-        done = (time() - self.schedule_ts) >= self.timeout
-        return done
+        return (time() - self.schedule_ts) >= self.timeout
 
 class InstantCommand(Command):
     def __init__(self, to_run):
